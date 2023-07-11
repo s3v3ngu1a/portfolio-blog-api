@@ -5,7 +5,7 @@ from flask import (
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 from blogApi.db import get_db
-from .helpers import auth_helper
+from helpers import auth_helper, key_generator
 
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -26,13 +26,14 @@ def register():
             error = 'Email is required.'
         if error is None:
             try:
+                api_id, api_key = generate_api_keys(username, email)
                 db.execute(
-                    "INSERT INTO user (username, password) VALUES (?, ?)",
-                    (username, generate_password_hash(password)),
+                    "INSERT INTO user (username, user_email, user_id, user_secret, show_cred) VALUES (?, ?, ?, ?)",
+                    (username, email,generate_password_hash(api_id), generate_password_hash(api_key), 1),
                 )
                 db.commit()
             except db.IntegrityError:
-                error = f"User {username} is already registered with the email {email}."
+                error = f"User {username} is already registered."
             else:
                 return redirect(url_for("auth.success_register"))
         flash(error)
@@ -43,3 +44,4 @@ def register():
 @bp.route('/success_register', methods=['GET'])
 def success_register():
     pass
+
