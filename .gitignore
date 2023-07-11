@@ -1,5 +1,7 @@
 .venv/
 
+blog-venv/
+
 *.pyc
 __pycache__/
 
